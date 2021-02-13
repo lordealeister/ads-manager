@@ -1,13 +1,13 @@
 {
-  "name": "lordealeister/ads-manager",
+  "name": "lordealeister/article-shortcode",
   "type": "wordpress-plugin",
-  "description": "Adds a button to the editor for inserting the article shortcode",
+  "description": "Simple Ads manager",
   "homepage": "https://github.com/lordealeister/ads-manager",
   "authors": [
     {
       "name": "Lorde Aleister",
       "email": "lordealeister@gmail.com",
-      "homepage": "https://github.com/lordealeister",
+      "homepage": "https://github.com/lordealeister/",
       "role": "Developer"
     }
   ],

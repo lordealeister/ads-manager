@@ -3,15 +3,15 @@
 })();
 
 function drawButton() {     
-    tinymce.PluginManager.add('article_shortcode_button', function(editor, url) {
+    tinymce.PluginManager.add('ads_shortcode_button', function(editor, url) {
         // Add a button that opens a window and adds a URL
-        editor.addButton('article_shortcode', {
-            title: 'Artigo',
-            icon: 'post-shortcode dashicons-before dashicons-admin-post',
+        editor.addButton('ads_shortcode', {
+            title: 'Anúncio',
+            icon: 'ads-shortcode dashicons-before dashicons-money-alt',
             onclick: function() {
                 availableElements = [
                     {
-                        text: 'Digite no campo acima para buscar artigos',
+                        text: 'Digite no campo acima para buscar anúncios',
                         value: 0,
                     }
                 ];
@@ -19,27 +19,28 @@ function drawButton() {
 
                 // Open window
                 editor.windowManager.open( {
-                    title: 'Inserir artigo',
+                    title: 'Inserir anúncio',
                     body: [
                         {
                             type: 'textbox',
                             name: 'title',
                             label: 'Busca',
                             onkeyup: debounce(function(event) {
-                                jQuery.post(
+                                jQuery.get(
                                     ajaxurl, 
                                     {
-                                        'action': 'articles_search',
+                                        'action': 'ads_search',
                                         'search': event.target.value,
-                                    }
+                                    },
+                                    null,
+                                    'json',
                                 ).done((response) => {
-                                    response = JSON.parse(response);
-
                                     for(i in availableElements)
                                         availableElements.pop();
 
                                     if(response.length) {
                                         for(i in response) {
+                                            
                                             availableElements.push({
                                                 value: response[i].ID,
                                                 text: response[i].post_title,
@@ -64,7 +65,7 @@ function drawButton() {
                         {
                             type: 'listbox',
                             name: 'id',
-                            label: 'Artigo',
+                            label: 'Anúncio',
                             fixedWidth: !0,
                             values: availableElements,
                             onPostRender: function() {
@@ -75,7 +76,7 @@ function drawButton() {
                     ],
                     onsubmit: function(event) {
                         if(event.data.id != 0)
-                            editor.insertContent(`[article id="${event.data.id}"]`);
+                            editor.insertContent(`[ads id="${event.data.id}"]`);
                     }
                 });
             }

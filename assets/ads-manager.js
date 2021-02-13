@@ -29,5 +29,7 @@ jQuery(function($) {
 			cache: false,
 		},
 		minimumInputLength: 3, // the minimum of symbols to input before perform a search
+		placeholder: "Vazio",
+		allowClear: true,
 	});
 });

@@ -38,6 +38,12 @@ if(!class_exists('AdsManager')):
             add_shortcode('ads', array($this, 'adsShortcodeOutput'));
 
             add_action('admin_enqueue_scripts', array($this, 'enqueueAssets'), 100);
+            
+            add_action('admin_menu', array($this, 'addMenuSettings'));
+            add_action('admin_init', array($this, 'updateSettings'));
+
+            if(!empty(get_option('ads_google')))
+                add_action('wp_enqueue_scripts', array($this, 'enqueueAssetsFront'));
         }
 
         function enqueueAssets() {
@@ -47,6 +53,11 @@ if(!class_exists('AdsManager')):
             endif;
             
             wp_enqueue_script('ads_manager_script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery', 'select2')); 
+        }
+
+        function enqueueAssetsFront() {
+            wp_enqueue_script('google-tag', 'https://securepubads.g.doubleclick.net/tag/js/gpt.js', [], null, false);
+            wp_add_inline_script('google-tag', $this->adsScripts());
         }
     
         function registerPostType() {
@@ -124,7 +135,7 @@ if(!class_exists('AdsManager')):
         function adsCodeMetaBox() {
             add_meta_box( 
                 'ads-code', // $id
-                __('Código', 'ads-manager'), // $title
+                __('Definições', 'ads-manager'), // $title
                 array($this, 'adsCodeMetaBoxContent'), // $callback
                 array('ads'),
                 'normal', // $context
@@ -133,15 +144,25 @@ if(!class_exists('AdsManager')):
         }
 
         function adsCodeMetaBoxContent($post) { 
-            $ads= get_post_meta($post->ID, 'ads_code', true);
-            echo "<textarea style=\"width: 100%; min-height: 200px;\" type=\"textarea\" name=\"ads_code\">$ads</textarea>";
+            $ads = get_post_meta($post->ID, 'ads_code', true);
+            echo "<div>
+                <label style=\"font-weight: bold; margin-bottom: 6px; display: block;\" for=\"ads_code\">Conteúdo do anúncio</label>
+                <textarea id=\"ads_code\" style=\"width: 100%; min-height: 200px;\" type=\"textarea\" name=\"ads_code\">$ads</textarea>
+                </div>";
+            
+            $slot = get_post_meta($post->ID, 'ads_slot', true);
+            echo "<div style=\"margin-top: 24px;" . (empty(get_option('ads_google')) ? "display: none;" : "") . "\">
+                <label style=\"font-weight: bold; margin-bottom: 6px; display: block;\" for=\"ads_slot\">Definição do slot</label>
+                <textarea id=\"ads_slot\" style=\"width: 100%; min-height: 200px;\" type=\"textarea\" name=\"ads_slot\">$slot</textarea>
+                </div>";
         }
 
         function saveAdsContent($post_id) {
-            if(!isset($_POST['ads_code']))
-                return;
+            if(isset($_POST['ads_code']))
+                update_post_meta($post_id, 'ads_code', $_POST['ads_code']);
 
-            update_post_meta($post_id, 'ads_code', $_POST['ads_code']);
+            if(isset($_POST['ads_slot']))
+                update_post_meta($post_id, 'ads_slot', $_POST['ads_slot']);
         }
 
         function adsMetaBox() {
@@ -332,6 +353,68 @@ if(!class_exists('AdsManager')):
                 return;
 
             return ads_code($atts['id']);
+        }
+
+        public function addMenuSettings() {
+            add_submenu_page(
+                'edit.php?post_type=ads',
+                'Configurações',
+                'Configurações',                   
+                'manage_options',                   
+                'ads-settings',                   
+                array($this, 'addPageSettings')               
+            ); 
+        }
+
+        public function addPageSettings() {
+            ?>
+            <h1>Configurações de ads</h1>
+
+            <form method="post" action="options.php">
+                <?php settings_fields('ads-settings'); ?>
+                <?php do_settings_sections('ads-settings'); ?>
+                
+                <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row"><label for="ads_google">Habilitar anúncios do Google:</label></th>
+                        <td><input type="checkbox" id="ads_google" name="ads_google" value="enabled" <?php echo(!empty(get_option('ads_google')) ? " checked" : ""); ?>/></td>
+                    </tr>
+                </table>
+
+                <?php submit_button(); ?>
+            </form>
+            <?php
+        }
+
+        function updateSettings() {
+            register_setting('ads-settings', 'ads_google'); 
+        }
+
+        function adsScripts() {
+            global $wpdb;
+            $data = "window.googletag = window.googletag || {cmd: []}; googletag.cmd.push(function() {";
+
+            $results = $wpdb->get_results( 
+                "SELECT pm.meta_value AS slot
+                FROM {$wpdb->posts} p
+                LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                AND pm.meta_key = 'ads_slot'
+                WHERE p.post_type = 'ads'
+                AND p.post_status NOT IN ('draft','auto-draft')"
+            );
+
+            if(!empty($results)):
+                foreach($results as $ads):
+                    if(empty($ads->slot))
+                        continue;
+
+                    $data .= $ads->slot;
+                endforeach;
+            endif;
+
+            $data .= "googletag.pubads().enableSingleRequest(); googletag.enableServices(); });";
+
+            return $data;
         }
 
     }

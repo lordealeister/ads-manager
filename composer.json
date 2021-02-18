@@ -13,6 +13,16 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "php": ">=5.3.0"
+    "php": ">=5.3.0",
+    "cmb2/cmb2": "dev-master",
+    "lordealeister/cmb2-field-post-search-ajax": "dev-master",
+    "jtsternberg/shortcode-button": "dev-master"
+  },
+  "autoload": {
+    "files": [
+      "vendor/cmb2/cmb2/init.php",
+      "vendor/lordealeister/cmb2-field-post-search-ajax/cmb-field-post-search-ajax.php",
+      "vendor/jtsternberg/shortcode-button/shortcode-button.php"
+    ]
   }
 }

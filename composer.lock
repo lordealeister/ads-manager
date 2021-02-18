@@ -1,0 +1,168 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "3d4318d70b2cbf0b911a1f3a2d5cc4d2",
+    "packages": [
+        {
+            "name": "cmb2/cmb2",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/CMB2/CMB2.git",
+                "reference": "8391c9ab88a564ca7c7b380e20152ca8554d5166"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/CMB2/CMB2/zipball/8391c9ab88a564ca7c7b380e20152ca8554d5166",
+                "reference": "8391c9ab88a564ca7c7b380e20152ca8554d5166",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">5.2.4"
+            },
+            "require-dev": {
+                "apigen/apigen": "4.1.2",
+                "nette/utils": "2.5.3",
+                "phpunit/phpunit": "6.5.13"
+            },
+            "suggest": {
+                "composer/installers": "~1.0"
+            },
+            "type": "wordpress-plugin",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Justin Sternberg",
+                    "email": "justin@dsgnwrks.pro",
+                    "homepage": "https://dsgnwrks.pro",
+                    "role": "Developer"
+                },
+                {
+                    "name": "WebDevStudios",
+                    "email": "contact@webdevstudios.com",
+                    "homepage": "https://github.com/WebDevStudios",
+                    "role": "Developer"
+                }
+            ],
+            "description": "CMB2 is a metabox, custom fields, and forms library for WordPress that will blow your mind.",
+            "homepage": "https://github.com/CMB2/CMB2",
+            "keywords": [
+                "metabox",
+                "plugin",
+                "wordpress"
+            ],
+            "time": "2021-02-08T16:14:33+00:00"
+        },
+        {
+            "name": "jtsternberg/shortcode-button",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jtsternberg/Shortcode_Button.git",
+                "reference": "50a9cc8cfdeb5772570578c1f19ab408e0702b9c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jtsternberg/Shortcode_Button/zipball/50a9cc8cfdeb5772570578c1f19ab408e0702b9c",
+                "reference": "50a9cc8cfdeb5772570578c1f19ab408e0702b9c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">5.2"
+            },
+            "type": "wordpress-plugin",
+            "autoload": {
+                "classmap": [
+                    "shortcode-button.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "jtsternberg",
+                    "email": "justin@dsgnwrks.pro",
+                    "homepage": "http://dsgnwrks.pro/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Tinymce and Quicktag buttons (and modals) for outputting shortcodes. Built to work with CMB2.",
+            "homepage": "https://github.com/jtsternberg/Shortcode_Button",
+            "keywords": [
+                "CMB2",
+                "shortcodes",
+                "wordpress"
+            ],
+            "time": "2017-06-07T15:59:21+00:00"
+        },
+        {
+            "name": "lordealeister/cmb2-field-post-search-ajax",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lordealeister/cmb2-field-post-search-ajax.git",
+                "reference": "4a75ea3f92f127b876a4d6ef331dd91a1442b8c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lordealeister/cmb2-field-post-search-ajax/zipball/4a75ea3f92f127b876a4d6ef331dd91a1442b8c5",
+                "reference": "4a75ea3f92f127b876a4d6ef331dd91a1442b8c5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">5.2.4"
+            },
+            "suggest": {
+                "composer/installers": "~1.0"
+            },
+            "type": "wordpress-plugin",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Lorde Aleister",
+                    "email": "lordealeister@gmail.com",
+                    "homepage": "https://github.com/lordealeister/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "CMB2 field type to attach posts to each others. Search with Ajax.",
+            "homepage": "https://github.com/lordealeister/cmb2-field-post-search-ajax",
+            "keywords": [
+                "attached",
+                "metabox",
+                "plugin",
+                "post",
+                "related",
+                "relationship",
+                "wordpress"
+            ],
+            "time": "2021-02-18T16:48:40+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "cmb2/cmb2": 20,
+        "lordealeister/cmb2-field-post-search-ajax": 20,
+        "jtsternberg/shortcode-button": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=5.3.0"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "1.1.0"
+}

@@ -10,49 +10,46 @@
  */
 
 if(!class_exists('AdsManager')):
+
+    if(file_exists(dirname(__FILE__) . '/vendor/autoload.php')):
+        require_once dirname(__FILE__) . '/vendor/autoload.php';
+    else:
+        if(file_exists(dirname(__FILE__) . '/vendor/cmb2/cmb2/init.php'))
+            require_once dirname(__FILE__) . '/vendor/cmb2/cmb2/init.php';
+
+        if(file_exists(dirname(__FILE__) . '/vendor/lordealeister/cmb2-field-post-search-ajax/cmb-field-post-search-ajax.php'))
+            require_once dirname(__FILE__) . '/vendor/lordealeister/cmb2-field-post-search-ajax/cmb-field-post-search-ajax.php';
+
+        if(file_exists(dirname(__FILE__) . '/vendor/jtsternberg/shortcode-button/shortcode-button.php'))
+            require_once dirname(__FILE__) . '/vendor/jtsternberg/shortcode-button/shortcode-button.php';
+    endif;
+
     class AdsManager {
 
         public function __construct() {
             // Register post type
             add_action('init', array($this, 'registerPostType'));
-            add_action('add_meta_boxes', array($this, 'adsCodeMetaBox'));
-            add_action('save_post_ads', array($this, 'saveAdsContent'));
-
-            add_action('category_add_form_fields', array($this, 'adsAddCategory'));
-            add_action('category_edit_form', array($this, 'adsEditCategory'));
-            add_action('created_category', array($this, 'saveCategoryAds'));
-            add_action('edited_category', array($this, 'saveCategoryAds'));
-
-            add_action('add_meta_boxes', array($this, 'adsMetaBox'));
-            add_action('save_post', array($this, 'saveAdsPosition'));
-
             add_action('init', array($this, 'registerTaxonomy'));
-            add_action('ads_position_edit_form_fields', array($this, 'positionEditAdsField'));
-            add_action('ads_position_add_form_fields', array($this, 'positionAddAdsField'));
-            add_action('edited_ads_position', array($this, 'savePositionAds'));  
-            add_action('create_ads_position', array($this, 'savePositionAds'));  
-            
-            add_action('wp_ajax_ads_search', array($this, 'adsSearch'));
-
-            add_action('admin_head', array($this, 'adsShortcodeTinymce'));    
-            add_shortcode('ads', array($this, 'adsShortcodeOutput'));
 
             add_action('admin_enqueue_scripts', array($this, 'enqueueAssets'), 100);
             
             add_action('admin_menu', array($this, 'addMenuSettings'));
             add_action('admin_init', array($this, 'updateSettings'));
 
+            add_action('cmb2_admin_init', array($this, 'adsMetaBox'));
+            add_action('cmb2_admin_init', array($this, 'adsPositionMetaBox'));
+            add_action('cmb2_admin_init', array($this, 'adsCodeMetaBox'));
+
+            add_action('shortcode_button_load', array($this, 'adsShortcodeTinymce'), (SHORTCODE_BUTTONS_LOADED + 1));
+            add_shortcode('ads', array($this, 'adsShortcodeOutput'));
+
             if(!empty(get_option('ads_google')))
                 add_action('wp_enqueue_scripts', array($this, 'enqueueAssetsFront'));
         }
 
-        function enqueueAssets() {
-            if(!wp_script_is('select2', 'enqueued')):
-                wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
-                wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery'));
-            endif;
-            
-            wp_enqueue_script('ads_manager_script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery', 'select2')); 
+        function enqueueAssets() {            
+            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery', 'select2')); 
+            wp_enqueue_style('ads-manager-style', plugins_url('/assets/ads-manager.css', __FILE__), false, null);
         }
 
         function enqueueAssetsFront() {
@@ -132,219 +129,200 @@ if(!class_exists('AdsManager')):
             ));
         }
 
-        function adsCodeMetaBox() {
-            add_meta_box( 
-                'ads-code', // $id
-                __('Definições', 'ads-manager'), // $title
-                array($this, 'adsCodeMetaBoxContent'), // $callback
-                array('ads'),
-                'normal', // $context
-                'high' // $priority
-            );
-        }
-
-        function adsCodeMetaBoxContent($post) { 
-            $ads = get_post_meta($post->ID, 'ads_code', true);
-            echo "<div>
-                <label style=\"font-weight: bold; margin-bottom: 6px; display: block;\" for=\"ads_code\">Conteúdo do anúncio</label>
-                <textarea id=\"ads_code\" style=\"width: 100%; min-height: 200px;\" type=\"textarea\" name=\"ads_code\">$ads</textarea>
-                </div>";
-            
-            $slot = get_post_meta($post->ID, 'ads_slot', true);
-            echo "<div style=\"margin-top: 24px;" . (empty(get_option('ads_google')) ? "display: none;" : "") . "\">
-                <label style=\"font-weight: bold; margin-bottom: 6px; display: block;\" for=\"ads_slot\">Definição do slot</label>
-                <textarea id=\"ads_slot\" style=\"width: 100%; min-height: 200px;\" type=\"textarea\" name=\"ads_slot\">$slot</textarea>
-                </div>";
-        }
-
-        function saveAdsContent($post_id) {
-            if(isset($_POST['ads_code']))
-                update_post_meta($post_id, 'ads_code', $_POST['ads_code']);
-
-            if(isset($_POST['ads_slot']))
-                update_post_meta($post_id, 'ads_slot', $_POST['ads_slot']);
-        }
-
         function adsMetaBox() {
-            add_meta_box( 
-                'ads', // $id
-                __('Anúncios', 'ads-manager'), // $title
-                array($this, 'adsMetaBoxContent'), // $callback
-                array('post', 'page'),
-                'side', // $context
-                'low' // $priority
-            );
+            $options = array();
+            $terms = get_terms(array('taxonomy' => 'ads_position', 'hide_empty' => false));
+
+            foreach($terms as $term)
+                $options[$term->term_id] = $term->name;
+
+            $metaBox = new_cmb2_box(array(
+                'id'           => 'ads_positions_metabox',
+                'title'        => __('Anúncios', 'ads-manager'),
+                'object_types' => array('page', 'post', 'term'),
+                'taxonomies'   => array('category'),
+                'context'      => 'side',
+                'priority'     => 'low',
+            ));
+
+            $metaBox->add_field(array(
+                'name' => '',
+                'desc' => __('Marque para gerenciar os anúncios nessa página'),
+                'id'   => 'ads_manage',
+                'type' => 'checkbox',
+            ));
+
+            $positions = $metaBox->add_field(array(
+                'id'          => 'ads_positions',
+                'type'        => 'group',
+                'options'     => array(
+                    'group_title'    => __('Posição {#}', 'ads-manager'), // {#} gets replaced by row number
+                    'add_button'     => __('Gerenciar nova posição', 'ads-manager'),
+                    'remove_button'  => __('Remover posição', 'ads-manager'),
+                    'sortable'       => false,
+                    'closed'         => true, // true to have the groups closed by default
+                ),
+            ));
+
+            $metaBox->add_group_field($positions, array(
+                'name'           => 'Posição',
+                'id'             => 'ads_position',
+                'taxonomy'       => 'ads_position', //Enter Taxonomy Slug
+                'type'           => 'select',
+                'show_option_none' => false,
+                'options'          => $options,
+            ));
+
+            $metaBox->add_group_field($positions, array(
+                'name'       => __('Anúncio mobile', 'ads-manager'),
+                'id'         => 'ads_mobile',
+                'type'       => 'post_search_ajax',
+                'desc'			=> __('Comece a digitar o título do anúncio', 'ads-manager'),
+                'query_args'	=> array(
+                    'post_type'			=> array('ads'),
+                    'post_status'		=> array('publish'),
+                    'posts_per_page'	=> -1,
+                )
+            ));
+
+            $metaBox->add_group_field($positions, array(
+                'name'       => __('Anúncio desktop', 'ads-manager'),
+                'id'         => 'ads_desktop',
+                'type'       => 'post_search_ajax',
+                'desc'			=> __('Comece a digitar o título do anúncio', 'ads-manager'),
+                'query_args'	=> array(
+                    'post_type'			=> array('ads'),
+                    'post_status'		=> array('publish'),
+                    'posts_per_page'	=> -1,
+                )
+            ));
         }
 
-        function adsMetaBoxContent($post) { 
-            $positions = get_terms(array('taxonomy' => 'ads_position', 'hide_empty' => false));
+        function adsPositionMetaBox() {
+            $metaBox = new_cmb2_box(array(
+                'id'           => 'ads_position_metabox',
+                'title'        => __('Anúncios', 'ads-manager'),
+                'object_types' => array('term'),
+                'taxonomies'   => array('ads_position'),
+                'context'      => 'normal',
+                'priority'     => 'low',
+            ));
 
-            foreach($positions as $position):
-                $key = "ads_position_" . $position->term_id;
-                $value = get_term_meta($position->term_id, "ads_code", true);
+            $metaBox->add_field(array(
+                'name'       => __('Anúncio padrão mobile', 'ads-manager'),
+                'id'         => 'ads_mobile',
+                'type'       => 'post_search_ajax',
+                'desc'			=> __('Comece a digitar o título do anúncio', 'ads-manager'),
+                'query_args'	=> array(
+                    'post_type'			=> array('ads'),
+                    'post_status'		=> array('publish'),
+                    'posts_per_page'	=> -1,
+                )
+            ));
 
-                if(metadata_exists('post', $post->ID, $key))
-                    $value = get_post_meta($post->ID, $key, true);
-
-                $data = $this->createSelect($key, $position->name, $value);
-
-                echo "<p class=\"post-attributes-label-wrapper\">$data->label</p>";
-                echo $data->select;    
-            endforeach;
+            $metaBox->add_field(array(
+                'name'       => __('Anúncio padrão desktop', 'ads-manager'),
+                'id'         => 'ads_desktop',
+                'type'       => 'post_search_ajax',
+                'desc'			=> __('Comece a digitar o título do anúncio', 'ads-manager'),
+                'query_args'	=> array(
+                    'post_type'			=> array('ads'),
+                    'post_status'		=> array('publish'),
+                    'posts_per_page'	=> -1,
+                )
+            ));
         }
 
-        function adsEditCategory($term) { 
-            $positions = get_terms(array('taxonomy' => 'ads_position', 'hide_empty' => false));
+        function adsCodeMetaBox() {
+            $metaBox = new_cmb2_box(array(
+                'id'           => 'ads_metabox',
+                'title'        => __('Definições', 'ads-manager'),
+                'object_types' => array('ads'),
+                'context'      => 'normal',
+            ));
 
-            echo "<p class=\"post-attributes-label-wrapper\">Anúncios</p>";
+            $metaBox->add_field(array(
+                'name'       => __('Conteúdo do anúncio', 'ads-manager'),
+                'id'         => 'ads_code',
+                'type'       => 'textarea_code',
+            ));
 
-            foreach($positions as $position):
-                $key = "ads_position_" . $position->term_id;
-                $value = get_term_meta($position->term_id, "ads_code", true);
-
-                if(metadata_exists('term', $term->term_id, $key))
-                    $value = get_post_meta($term->term_id, $key, true);
-
-                $data = $this->createSelect($key, $position->name, $value);
-
-                echo "<p class=\"post-attributes-label-wrapper\">$data->label</p>";
-                echo $data->select;    
-            endforeach;
+            $metaBox->add_field(array(
+                'name'       => __('Definição do slot', 'ads-manager'),
+                'id'         => 'ads_slot',
+                'type'       => 'textarea_code',
+                'attributes' => array(
+                    'style'  => empty(get_option('ads_google')) ? 'display: none;' : '',
+                )
+            ));
         }
 
-        function adsAddCategory() {
-            $positions = get_terms(array('taxonomy' => 'ads_position', 'hide_empty' => false));
-
-            echo "<p class=\"post-attributes-label-wrapper\">Anúncios</p>";
-
-            foreach($positions as $position):
-                $key = "ads_position_" . $position->term_id;
-                $value = get_term_meta($position->term_id, "ads_code", true);
-
-                $data = $this->createSelect($key, $position->name, $value);
-
-                $html = "<div class=\"form-field term-description-wrap\" style=\"width: 95%;\">";
-                $html .= $data->label;
-                $html .= $data->select;
-                $html .= "</div>";
-            
-                echo $html;  
-            endforeach;
-        }  
-
-        function saveCategoryAds($term_id) {
-            $positions = array_filter(
-                $_POST,
-                function($key) {
-                    return (substr($key, 0, strlen("ads_position_")) === "ads_position_");
-                },
-                ARRAY_FILTER_USE_KEY
-            );
-
-            if(empty($positions))
-                return;
-
-            foreach($positions as $key => $value)
-                update_term_meta($term_id, $key, sanitize_text_field($value));
-        }
-
-        function saveAdsPosition($post_id) {
-            $positions = array_filter(
-                $_POST,
-                function($key) {
-                    return (substr($key, 0, strlen("ads_position_")) === "ads_position_");
-                },
-                ARRAY_FILTER_USE_KEY
-            );
-
-            if(empty($positions))
-                return;
-
-            foreach($positions as $key => $value)
-                update_post_meta($post_id, $key, sanitize_text_field($value));
-        }
-
-        function createSelect($id, $title, $value = "") {
-            $data = new stdClass();
-            $data->label = "<label for=\"$id\" class=\"post-attributes-label\">$title</label>";
-            $data->select = "<select id=\"$id\" class=\"ads-select\" name=\"$id\" style=\"width: 100%;\">";
-
-            $data->select .= "<option value=\"\"" . (empty($value) ? " selected=\"selected\"" : "") . ">Vazio</option>";
-            
-            if(!empty($value))
-                $data->select .= "<option value=\"$value\" selected=\"selected\">" . get_the_title($value) . "</option>";
-
-            $data->select .= "</select>";
-
-            return $data;
-        }
-
-        function positionEditAdsField($term) {  
-            $key = "ads_code";
-            $value = "";
-            
-            if(!is_string($term))
-                $value = get_term_meta($term->term_id, $key, true);
-
-            $data = $this->createSelect($key, 'Anúncio padrão', $value);
-
-            $html = "<tr class=\"form-field term-name-wrap\">";
-			$html .= "<th scope=\"row\">$data->label</th>";
-			$html .= "<td>$data->select</td>";
-            $html .= "</tr>";
-         
-            echo $html;
-        }  
-
-        function positionAddAdsField() {  
-            $key = "ads_code";
-
-            $data = $this->createSelect($key, 'Anúncio padrão', "");
-
-            $html = "<div class=\"form-field term-description-wrap\" style=\"width: 95%;\">";
-			$html .= $data->label;
-			$html .= $data->select;
-            $html .= "</div>";
-         
-            echo $html;
-        }  
-
-        function savePositionAds($term_id) {
-            if(!isset($_POST['ads_code']))
-                return;
-
-            $ads = sanitize_text_field($_POST['ads_code']);
-
-            update_term_meta($term_id, 'ads_code', $ads);
-        }
-
-        public function adsShortcodeTinymce() {
-            add_filter('mce_external_plugins', array($this, 'adsShortcodeTinymcePlugin'));
-            add_filter('mce_buttons', array($this, 'adsShortcodeTinymceButton'));
-        }
+        function adsShortcodeTinymce() {
+            // the button slug should be your shortcodes name.
+            // The same value you would use in `add_shortcode`
+            // Only numbers, letters and underscores are allowed.
+            $button_slug = 'ads';
         
-        // inlcude the js for tinymce
-        public function adsShortcodeTinymcePlugin($plugin_array) {
-            $plugin_array['ads_shortcode_button'] = plugins_url('/assets/ads-shortcode.js', __FILE__);
-
-            return $plugin_array;
+            // Set up the button data that will be passed to the javascript files
+            $js_button_data = array(
+                // Actual quicktag button text (on the text edit tab)
+                'qt_button_text' => __('Anúncio', 'ads-manager'),
+                // Tinymce button hover tooltip (on the html edit tab)
+                'button_tooltip' => __('Inserir anúncio', 'ads-manager'),
+                // Tinymce button icon. Use a dashicon class or a 20x20 image url
+                'icon'           => 'dashicons-money-alt',
+        
+                // Optional parameters
+                'author'         => 'Lorde Aleister',
+                'authorurl'      => 'https://github.com/lordealeister',
+                'infourl'        => 'https://github.com/lordealeister/ads-manager',
+                'version'        => '0.0.1',
+                'include_close'  => true, // Will wrap your selection in the shortcode
+                'mceView'        => false, // Live preview of shortcode in editor. YMMV.
+        
+                // Use your own textdomain
+                'l10ncancel'     => __('Cancel', 'shortcode-button'),
+                'l10ninsert'     => __('Insert Shortcode', 'shortcode-button'),
+            );
+        
+            // Optional additional parameters
+            $additional_args = array(
+                // Can be a callback or metabox config array
+                'cmb_metabox_config'   => array($this, 'adsShortcodeConfig'),
+            );
+        
+            new Shortcode_Button($button_slug, $js_button_data, $additional_args);
         }
 
-        // Add the button key for address via JS
-        public function adsShortcodeTinymceButton($buttons) {
-            array_push($buttons, 'ads_shortcode');
-
-            return $buttons;
-        }
-
-        public function adsSearch() {
-            $search = $_GET['search'];
-
-            global $wpdb;
-            $ads = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type = 'ads' AND post_status = 'publish' AND post_title LIKE '%s'", '%' . $wpdb->esc_like($search) . '%'));
-
-            echo wp_json_encode($ads);
-            wp_die(); // this is required to terminate immediately and return a proper response
+        function adsShortcodeConfig($button_data) {
+            return array(
+                'id'     => 'shortcode_'. $button_data['slug'],
+                'fields' => array(
+                    array(
+                        'name'    => __('Anúncio', 'ads-manager'),
+                        'desc'    => __('Comece a digitar o título do anúncio', 'ads-manager'),
+                        'id'      => 'id',
+                        'type'    => 'post_search_ajax',
+                        'query_args'	=> array(
+                            'post_type'			=> array('ads'),
+                            'post_status'		=> array('publish'),
+                            'posts_per_page'	=> -1,
+                        )
+                    ),
+                    array(
+                        'name'    => __('Exibir em', 'ads-manager'),
+                        'id'      => 'display',
+                        'type'    => 'radio_inline',
+                        'options' => array(
+                            'mobile' => __('Mobile', 'ads-manager'),
+                            'desktop'   => __('Desktop', 'ads-manager'),
+                        ),
+                        'default' => 'mobile',
+                    )
+                ),
+                // keep this w/ a key of 'options-page' and use the button slug as the value
+                'show_on' => array('key' => 'options-page', 'value' => $button_data['slug']),
+            );
         }
 
         //function to output shortcode
@@ -352,7 +330,7 @@ if(!class_exists('AdsManager')):
             if(!isset($atts['id']))
                 return;
 
-            return ads_code($atts['id']);
+            return ads_code($atts['id'], isset($atts['display']) ? $atts['display'] : 'mobile');
         }
 
         public function addMenuSettings() {
@@ -422,38 +400,64 @@ if(!class_exists('AdsManager')):
     function ads_position($position) {
         if(empty($position))
             return;
-
+        
         $position = get_term_by('slug', $position, 'ads_position');
         if(empty($position))
             return;
-        
+
+        $ads_mobile = 0;
+        $ads_desktop = 0;
         $is_category = is_category();
 
-        if($is_category && !metadata_exists('term', get_query_var('cat'), "ads_position_" . $position->term_id) ||
-            !$is_category && !metadata_exists('post', get_the_ID(), "ads_position_" . $position->term_id)):
-            $ads = get_term_meta($position->term_id, "ads_code", true);
+        if(!$is_category && !empty(get_post_meta(get_the_ID(), 'ads_manage', true)) || 
+            $is_category && !empty(get_term_meta(get_query_var('cat'), 'ads_manage', true))):
+            $entries = $is_category ? get_term_meta(get_query_var('cat'), 'ads_positions', true) : get_post_meta(get_the_ID(), 'ads_positions', true);    
+            
+            foreach($entries as $entry):
+                if($entry['ads_position'] != $position->term_id)
+                    continue;
 
-            if(!empty($ads))
-                return get_post_meta($ads, "ads_code", true);
-
-            return "";
+                $ads_mobile = isset($entry['ads_mobile']) ? $entry['ads_mobile'] : -1;
+                $ads_desktop = isset($entry['ads_desktop']) ? $entry['ads_desktop'] : -1;
+            endforeach;
         endif;
 
-        $ads = $is_category ? get_term_meta(get_query_var('cat'), "ads_position_" . $position->term_id, true) : get_post_meta(get_the_ID(), "ads_position_" . $position->term_id, true);
-        
-        if(empty($ads))
-            return;
+        $html = "";
 
-        return get_post_meta($ads, "ads_code", true);
+        if(!empty($ads_mobile) && $ads_mobile != -1):
+            $html .= "<div class=\"d-flex d-lg-none\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
+        elseif(empty($ads_mobile)):
+            $ads_mobile = get_term_meta($position->term_id, 'ads_mobile', true);
+
+            if(!empty($ads_mobile))
+                $ads_mobile = get_post_meta($ads_mobile, 'ads_code', true);
+
+            if(!empty($ads_mobile))
+                $html .= "<div class=\"d-flex d-lg-none\">$ads_mobile</div>";
+        endif;
+
+        if(!empty($ads_desktop) && $ads_desktop != -1):
+            $html .= "<div class=\"d-none d-lg-flex\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
+        elseif(empty($ads_desktop)):
+            $ads_desktop = get_term_meta($position->term_id, 'ads_desktop', true);
+
+            if(!empty($ads_mobile))
+                $ads_desktop = get_post_meta($ads_desktop, 'ads_code', true);
+
+            if(!empty($ads_desktop))
+                $html .= "<div class=\"d-none d-lg-flex\">$ads_desktop</div>";
+        endif;
+
+        return $html;
     }
 
-    function ads_code($id = 0) {
+    function ads_code($id = 0, $display = 'mobile') {
         if(empty($id))
             $id = get_the_ID();
         if(empty($id))
             return;
 
-        return get_post_meta($id, "ads_code", true);
+        return "<div class=\"" . ($display == 'mobile' ? 'd-flex d-lg-none' : 'd-none d-lg-flex') . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
     }
 
     new AdsManager();

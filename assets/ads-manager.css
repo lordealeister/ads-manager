@@ -1,0 +1,19 @@
+#ads_positions_repeat .cmb-repeat-group-field {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    margin: 0;
+}
+
+#ads_positions_repeat .cmb-repeat-group-field .cmb-th,
+#ads_positions_repeat .cmb-repeat-group-field .cmb2-metabox-description {
+    padding: 0;
+}
+
+#ads_positions_repeat .cmb-repeat-group-field .cmb-th label {
+    padding: 0;
+    margin: 0;
+}
+
+.autocomplete-suggestions {
+    z-index: 999999 !important;
+}

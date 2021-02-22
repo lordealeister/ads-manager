@@ -40,7 +40,7 @@ if(!class_exists('AdsManager')):
             add_action('cmb2_admin_init', array($this, 'adsPositionMetaBox'));
             add_action('cmb2_admin_init', array($this, 'adsCodeMetaBox'));
 
-            add_action('shortcode_button_load', array($this, 'adsShortcodeTinymce'), (SHORTCODE_BUTTONS_LOADED + 1));
+            add_action('shortcode_button_load', array($this, 'adsShortcodeTinymce'), 9993);
             add_shortcode('ads', array($this, 'adsShortcodeOutput'));
 
             if(!empty(get_option('ads_google')))
@@ -48,7 +48,7 @@ if(!class_exists('AdsManager')):
         }
 
         function enqueueAssets() {            
-            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery', 'select2')); 
+            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery')); 
             wp_enqueue_style('ads-manager-style', plugins_url('/assets/ads-manager.css', __FILE__), false, null);
         }
 

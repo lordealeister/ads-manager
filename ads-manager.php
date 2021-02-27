@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -425,7 +425,7 @@ if(!class_exists('AdsManager')):
         $html = "";
 
         if(!empty($ads_mobile) && $ads_mobile != -1):
-            $html .= "<div class=\"d-flex d-lg-none\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
+            $html .= "<div class=\"ads-manager ads-position ads-mobile d-flex d-lg-none\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
         elseif(empty($ads_mobile)):
             $ads_mobile = get_term_meta($position->term_id, 'ads_mobile', true);
 
@@ -433,11 +433,11 @@ if(!class_exists('AdsManager')):
                 $ads_mobile = get_post_meta($ads_mobile, 'ads_code', true);
 
             if(!empty($ads_mobile))
-                $html .= "<div class=\"d-flex d-lg-none\">$ads_mobile</div>";
+                $html .= "<div class=\"ads-manager ads-position ads-mobile d-flex d-lg-none\">$ads_mobile</div>";
         endif;
 
         if(!empty($ads_desktop) && $ads_desktop != -1):
-            $html .= "<div class=\"d-none d-lg-flex\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
+            $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-flex\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
         elseif(empty($ads_desktop)):
             $ads_desktop = get_term_meta($position->term_id, 'ads_desktop', true);
 
@@ -445,7 +445,7 @@ if(!class_exists('AdsManager')):
                 $ads_desktop = get_post_meta($ads_desktop, 'ads_code', true);
 
             if(!empty($ads_desktop))
-                $html .= "<div class=\"d-none d-lg-flex\">$ads_desktop</div>";
+                $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-flex\">$ads_desktop</div>";
         endif;
 
         return $html;
@@ -457,7 +457,7 @@ if(!class_exists('AdsManager')):
         if(empty($id))
             return;
 
-        return "<div class=\"" . ($display == 'mobile' ? 'd-flex d-lg-none' : 'd-none d-lg-flex') . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
+        return "<div class=\"" . ($display == 'mobile' ? 'ads-manager ads-code ads-mobile d-flex d-lg-none' : 'ads-manager ads-code ads-desktop d-none d-lg-flex') . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
     }
 
     new AdsManager();

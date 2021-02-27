@@ -425,7 +425,7 @@ if(!class_exists('AdsManager')):
         $html = "";
 
         if(!empty($ads_mobile) && $ads_mobile != -1):
-            $html .= "<div class=\"ads-manager ads-position ads-mobile d-flex d-lg-none\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
+            $html .= "<div class=\"ads-manager ads-position ads-mobile d-block d-lg-none\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
         elseif(empty($ads_mobile)):
             $ads_mobile = get_term_meta($position->term_id, 'ads_mobile', true);
 
@@ -433,11 +433,11 @@ if(!class_exists('AdsManager')):
                 $ads_mobile = get_post_meta($ads_mobile, 'ads_code', true);
 
             if(!empty($ads_mobile))
-                $html .= "<div class=\"ads-manager ads-position ads-mobile d-flex d-lg-none\">$ads_mobile</div>";
+                $html .= "<div class=\"ads-manager ads-position ads-mobile d-block d-lg-none\">$ads_mobile</div>";
         endif;
 
         if(!empty($ads_desktop) && $ads_desktop != -1):
-            $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-flex\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
+            $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-block\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
         elseif(empty($ads_desktop)):
             $ads_desktop = get_term_meta($position->term_id, 'ads_desktop', true);
 
@@ -445,19 +445,19 @@ if(!class_exists('AdsManager')):
                 $ads_desktop = get_post_meta($ads_desktop, 'ads_code', true);
 
             if(!empty($ads_desktop))
-                $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-flex\">$ads_desktop</div>";
+                $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-block\">$ads_desktop</div>";
         endif;
 
         return $html;
     }
 
-    function ads_code($id = 0, $display = 'mobile') {
+    function ads_code($id = 0, $display = null) {
         if(empty($id))
             $id = get_the_ID();
         if(empty($id))
             return;
 
-        return "<div class=\"" . ($display == 'mobile' ? 'ads-manager ads-code ads-mobile d-flex d-lg-none' : 'ads-manager ads-code ads-desktop d-none d-lg-flex') . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
+        return "<div class=\"" . ($display == 'mobile' ? 'ads-manager ads-code ads-mobile d-block d-lg-none' : ($display == 'desktop' ? 'ads-manager ads-code ads-desktop d-none d-lg-block' : 'ads-manager ads-code d-block')) . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
     }
 
     new AdsManager();

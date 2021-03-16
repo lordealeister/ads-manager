@@ -4,20 +4,39 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d4318d70b2cbf0b911a1f3a2d5cc4d2",
+    "content-hash": "48f34c6e938e41db9b8697f0ed831c84",
     "packages": [
+        {
+            "name": "abuyoyo/cmb2-switch-button",
+            "version": "1.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/abuyoyo/CMB2-Switch-Button.git",
+                "reference": "189c18c22df16a666d34e84c709aac0a5c1894f5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/abuyoyo/CMB2-Switch-Button/zipball/189c18c22df16a666d34e84c709aac0a5c1894f5",
+                "reference": "189c18c22df16a666d34e84c709aac0a5c1894f5",
+                "shasum": ""
+            },
+            "type": "wordpress-plugin",
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "CMB2 Switch Button",
+            "time": "2020-11-19T02:24:45+00:00"
+        },
         {
             "name": "cmb2/cmb2",
             "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CMB2/CMB2.git",
-                "reference": "8391c9ab88a564ca7c7b380e20152ca8554d5166"
+                "reference": "cacbc8cedbfdf8ffe0e840858e6860f9333c33f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CMB2/CMB2/zipball/8391c9ab88a564ca7c7b380e20152ca8554d5166",
-                "reference": "8391c9ab88a564ca7c7b380e20152ca8554d5166",
+                "url": "https://api.github.com/repos/CMB2/CMB2/zipball/cacbc8cedbfdf8ffe0e840858e6860f9333c33f2",
+                "reference": "cacbc8cedbfdf8ffe0e840858e6860f9333c33f2",
                 "shasum": ""
             },
             "require": {
@@ -25,6 +44,7 @@
             },
             "require-dev": {
                 "apigen/apigen": "4.1.2",
+                "awesomemotive/am-cli-tools": ">=1.3.1",
                 "nette/utils": "2.5.3",
                 "phpunit/phpunit": "6.5.13"
             },
@@ -57,7 +77,7 @@
                 "plugin",
                 "wordpress"
             ],
-            "time": "2021-02-08T16:14:33+00:00"
+            "time": "2021-03-04T02:18:53+00:00"
         },
         {
             "name": "jtsternberg/shortcode-button",

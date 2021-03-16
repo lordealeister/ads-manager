@@ -11,18 +11,8 @@
 
 if(!class_exists('AdsManager')):
 
-    if(file_exists(dirname(__FILE__) . '/vendor/autoload.php')):
+    if(file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
         require_once dirname(__FILE__) . '/vendor/autoload.php';
-    else:
-        if(file_exists(dirname(__FILE__) . '/vendor/cmb2/cmb2/init.php'))
-            require_once dirname(__FILE__) . '/vendor/cmb2/cmb2/init.php';
-
-        if(file_exists(dirname(__FILE__) . '/vendor/lordealeister/cmb2-field-post-search-ajax/cmb-field-post-search-ajax.php'))
-            require_once dirname(__FILE__) . '/vendor/lordealeister/cmb2-field-post-search-ajax/cmb-field-post-search-ajax.php';
-
-        if(file_exists(dirname(__FILE__) . '/vendor/jtsternberg/shortcode-button/shortcode-button.php'))
-            require_once dirname(__FILE__) . '/vendor/jtsternberg/shortcode-button/shortcode-button.php';
-    endif;
 
     class AdsManager {
 
@@ -50,6 +40,7 @@ if(!class_exists('AdsManager')):
         function enqueueAssets() {            
             wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery')); 
             wp_enqueue_style('ads-manager-style', plugins_url('/assets/ads-manager.css', __FILE__), false, null);
+            wp_enqueue_script('cmb2_conditional_logic', plugins_url('/assets/cmb2-conditional-logic.min.js', __FILE__), array('jquery'), false, true);
         }
 
         function enqueueAssetsFront() {
@@ -149,7 +140,7 @@ if(!class_exists('AdsManager')):
                 'name' => '',
                 'desc' => __('Marque para gerenciar os anúncios nessa página'),
                 'id'   => 'ads_manage',
-                'type' => 'checkbox',
+                'type' => 'switch',
             ));
 
             $positions = $metaBox->add_field(array(
@@ -174,6 +165,15 @@ if(!class_exists('AdsManager')):
             ));
 
             $metaBox->add_group_field($positions, array(
+                'name'             => __('Ativo', 'ads-manager'),
+                'id'               => 'ads_position_active',
+                'type'             => 'switch',
+                'default'          => true, //If it's checked by default 
+                'active_value'     => true,
+                'inactive_value'   => false
+            ));
+
+            $metaBox->add_group_field($positions, array(
                 'name'       => __('Anúncio mobile', 'ads-manager'),
                 'id'         => 'ads_mobile',
                 'type'       => 'post_search_ajax',
@@ -182,7 +182,11 @@ if(!class_exists('AdsManager')):
                     'post_type'			=> array('ads'),
                     'post_status'		=> array('publish'),
                     'posts_per_page'	=> -1,
-                )
+                ),
+                'attributes'    => array(
+                    'data-conditional-id'     => 'ads_position_active',
+                    'data-conditional-value'  => true,
+                ),
             ));
 
             $metaBox->add_group_field($positions, array(
@@ -194,7 +198,11 @@ if(!class_exists('AdsManager')):
                     'post_type'			=> array('ads'),
                     'post_status'		=> array('publish'),
                     'posts_per_page'	=> -1,
-                )
+                ),
+                'attributes'    => array(
+                    'data-conditional-id'     => 'ads_position_active',
+                    'data-conditional-value'  => true,
+                ),
             ));
         }
 
@@ -416,6 +424,9 @@ if(!class_exists('AdsManager')):
             foreach($entries as $entry):
                 if($entry['ads_position'] != $position->term_id)
                     continue;
+
+                if(empty($entry['ads_position_active']))
+                    return '';
 
                 $ads_mobile = isset($entry['ads_mobile']) ? $entry['ads_mobile'] : -1;
                 $ads_desktop = isset($entry['ads_desktop']) ? $entry['ads_desktop'] : -1;

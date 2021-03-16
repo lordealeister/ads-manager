@@ -17,3 +17,19 @@
 .autocomplete-suggestions {
     z-index: 999999 !important;
 }
+
+.cmb2-id-ads-manage .cmb-td {
+    align-items: center;
+    display: flex !important;
+}
+
+.cmb2-switch {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cmb2-id-ads-manage .cmb-td .cmb2-metabox-description {
+    flex: 1 !important;
+    margin-left: 16px !important;
+    padding: 0 !important;
+}

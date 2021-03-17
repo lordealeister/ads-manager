@@ -5,8 +5,16 @@
 }
 
 #ads_positions_repeat .cmb-repeat-group-field .cmb-th,
+.cmb-repeat-group-field .cmb-td,
 #ads_positions_repeat .cmb-repeat-group-field .cmb2-metabox-description {
     padding: 0;
+    position: relative;
+}
+
+.cmb-repeat-group-field .cmb-td .autocomplete-suggestions {
+    top: 30px !important;
+    left: 50% !important;
+    transform: translateX(-50%);
 }
 
 #ads_positions_repeat .cmb-repeat-group-field .cmb-th label {

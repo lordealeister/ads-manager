@@ -129,12 +129,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lordealeister/cmb2-field-post-search-ajax.git",
-                "reference": "4a75ea3f92f127b876a4d6ef331dd91a1442b8c5"
+                "reference": "98314638833941c062ff5fe362196f776f3d09ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lordealeister/cmb2-field-post-search-ajax/zipball/4a75ea3f92f127b876a4d6ef331dd91a1442b8c5",
-                "reference": "4a75ea3f92f127b876a4d6ef331dd91a1442b8c5",
+                "url": "https://api.github.com/repos/lordealeister/cmb2-field-post-search-ajax/zipball/98314638833941c062ff5fe362196f776f3d09ff",
+                "reference": "98314638833941c062ff5fe362196f776f3d09ff",
                 "shasum": ""
             },
             "require": {
@@ -167,7 +167,7 @@
                 "relationship",
                 "wordpress"
             ],
-            "time": "2021-02-18T16:48:40+00:00"
+            "time": "2021-03-17T15:26:00+00:00"
         }
     ],
     "packages-dev": [],

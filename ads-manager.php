@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.1.1
+ * Version:     1.1.3
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -18,8 +18,8 @@ if(!class_exists('AdsManager')):
 
         public function __construct() {
             // Register post type
-            add_action('init', array($this, 'registerPostType'));
-            add_action('init', array($this, 'registerTaxonomy'));
+            add_action('init', array($this, 'registerPostType'), 1);
+            add_action('init', array($this, 'registerTaxonomy'), 1);
 
             add_action('admin_enqueue_scripts', array($this, 'enqueueAssets'), 100);
             
@@ -257,6 +257,7 @@ if(!class_exists('AdsManager')):
 
             $metaBox->add_field(array(
                 'name'       => __('Definição do slot', 'ads-manager'),
+                'desc'       => __("Insira somente a definição do slot, exemplo: <br> googletag.defineSlot('/12345678/eC_HomeM_Square1', [300, 250], 'div-gpt-ad-123456789-0').addService(googletag.pubads());", 'ads-manager'),
                 'id'         => 'ads_slot',
                 'type'       => 'textarea_code',
                 'attributes' => array(

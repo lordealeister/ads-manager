@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.1.2
+ * Version:     1.1.3
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -18,8 +18,8 @@ if(!class_exists('AdsManager')):
 
         public function __construct() {
             // Register post type
-            add_action('init', array($this, 'registerPostType'));
-            add_action('init', array($this, 'registerTaxonomy'));
+            add_action('init', array($this, 'registerPostType'), 1);
+            add_action('init', array($this, 'registerTaxonomy'), 1);
 
             add_action('admin_enqueue_scripts', array($this, 'enqueueAssets'), 100);
             

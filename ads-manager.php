@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.1.3
+ * Version:     1.2.0
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -38,12 +38,13 @@ if(!class_exists('AdsManager')):
         }
 
         function enqueueAssets() {            
-            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.js', __FILE__), array('jquery')); 
+            wp_enqueue_script('ads-manager-admin-script', plugins_url('/assets/ads-manager-admin.js', __FILE__), array('jquery')); 
             wp_enqueue_style('ads-manager-style', plugins_url('/assets/ads-manager.css', __FILE__), false, null);
             wp_enqueue_script('cmb2_conditional_logic', plugins_url('/assets/cmb2-conditional-logic.min.js', __FILE__), array('jquery'), false, true);
         }
 
         function enqueueAssetsFront() {
+            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.min.js', __FILE__), array()); 
             wp_enqueue_script('google-tag', 'https://securepubads.g.doubleclick.net/tag/js/gpt.js', [], null, false);
             wp_add_inline_script('google-tag', $this->adsScripts());
         }
@@ -354,6 +355,8 @@ if(!class_exists('AdsManager')):
         }
 
         public function addPageSettings() {
+            $maxMobileSize = get_option('ads_mobile_max_size');
+            $maxMobileSize = !empty($maxMobileSize) ? $maxMobileSize : 991;
             ?>
             <h1>Configurações de ads</h1>
 
@@ -366,6 +369,10 @@ if(!class_exists('AdsManager')):
                         <th scope="row"><label for="ads_google">Habilitar anúncios do Google:</label></th>
                         <td><input type="checkbox" id="ads_google" name="ads_google" value="enabled" <?php echo(!empty(get_option('ads_google')) ? " checked" : ""); ?>/></td>
                     </tr>
+                    <tr valign="top">
+                        <th scope="row"><label for="ads_mobile_max_size">Tamanho máximo da tela para anúncios mobile:</label></th>
+                        <td><input type="number" id="ads_mobile_max_size" name="ads_mobile_max_size" value="<?= $maxMobileSize; ?>" /></td>
+                    </tr>
                 </table>
 
                 <?php submit_button(); ?>
@@ -375,6 +382,7 @@ if(!class_exists('AdsManager')):
 
         function updateSettings() {
             register_setting('ads-settings', 'ads_google'); 
+            register_setting('ads-settings', 'ads_mobile_max_size'); 
         }
 
         function adsScripts() {
@@ -417,6 +425,11 @@ if(!class_exists('AdsManager')):
         $ads_mobile = 0;
         $ads_desktop = 0;
         $is_category = is_category();
+        $htmlMobile = "";
+        $htmlDesktop = "";
+        $id = uniqid('ads-');
+        $maxMobileSize = get_option('ads_mobile_max_size');
+        $maxMobileSize = !empty($maxMobileSize) ? $maxMobileSize : 991;
 
         if(!$is_category && !empty(get_post_meta(get_the_ID(), 'ads_manage', true)) || 
             $is_category && !empty(get_term_meta(get_query_var('cat'), 'ads_manage', true))):
@@ -434,10 +447,8 @@ if(!class_exists('AdsManager')):
             endforeach;
         endif;
 
-        $html = "";
-
         if(!empty($ads_mobile) && $ads_mobile != -1):
-            $html .= "<div class=\"ads-manager ads-position ads-mobile d-block d-lg-none\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
+            $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
         elseif(empty($ads_mobile)):
             $ads_mobile = get_term_meta($position->term_id, 'ads_mobile', true);
 
@@ -445,11 +456,11 @@ if(!class_exists('AdsManager')):
                 $ads_mobile = get_post_meta($ads_mobile, 'ads_code', true);
 
             if(!empty($ads_mobile))
-                $html .= "<div class=\"ads-manager ads-position ads-mobile d-block d-lg-none\">$ads_mobile</div>";
+                $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">$ads_mobile</div>";
         endif;
 
         if(!empty($ads_desktop) && $ads_desktop != -1):
-            $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-block\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
+            $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
         elseif(empty($ads_desktop)):
             $ads_desktop = get_term_meta($position->term_id, 'ads_desktop', true);
 
@@ -457,10 +468,31 @@ if(!class_exists('AdsManager')):
                 $ads_desktop = get_post_meta($ads_desktop, 'ads_code', true);
 
             if(!empty($ads_desktop))
-                $html .= "<div class=\"ads-manager ads-position ads-desktop d-none d-lg-block\">$ads_desktop</div>";
+                $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\">$ads_desktop</div>";
         endif;
 
-        return $html;
+        $htmlMobile = preg_replace('/\r|\n/', '', $htmlMobile);
+        $htmlMobile = str_replace('<', '\x3C', $htmlMobile);
+        $htmlMobile = str_replace('\'', '"', $htmlMobile);
+
+        $htmlDesktop = preg_replace('/\r|\n/', '', $htmlDesktop);
+        $htmlDesktop = str_replace('<', '\x3C', $htmlDesktop);
+        $htmlDesktop = str_replace('\'', '"', $htmlDesktop);
+
+        $script = "<script>
+            var template = function() {
+                if(window.matchMedia('(max-width: {$maxMobileSize}px').matches)
+                    ads = '$htmlMobile';
+                else
+                    ads = '$htmlDesktop';
+
+                return ads;
+            };
+        
+            renderAds(template(), document.querySelector('#$id'));
+        </script>";
+
+        return "<div id=\"$id\"></div>$script";
     }
 
     function ads_code($id = 0, $display = null) {

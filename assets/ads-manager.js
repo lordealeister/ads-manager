@@ -1,4 +1,4 @@
-var renderAds = function(template, node) {
+window.renderAds = function(template, node) {
     if(!node) 
 		return;
 

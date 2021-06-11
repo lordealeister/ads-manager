@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.2.0
+ * Version:     1.2.1
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -489,7 +489,7 @@ if(!class_exists('AdsManager')):
                 return ads;
             };
         
-            renderAds(template(), document.querySelector('#$id'));
+            window.renderAds(template(), document.querySelector('#$id'));
         </script>";
 
         return "<div id=\"$id\"></div>$script";

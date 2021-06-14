@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.2.1
+ * Version:     1.2.2
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -481,7 +481,7 @@ if(!class_exists('AdsManager')):
 
         $script = "<script>
             var template = function() {
-                if(window.matchMedia('(max-width: {$maxMobileSize}px').matches)
+                if(window.innerWidth <= {$maxMobileSize})
                     ads = '$htmlMobile';
                 else
                     ads = '$htmlDesktop';

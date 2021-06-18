@@ -448,25 +448,21 @@ if(!class_exists('AdsManager')):
         endif;
 
         if(!empty($ads_mobile) && $ads_mobile != -1):
-            $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
+            $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\"><script>if(window.innerWidth <= {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_mobile, 'ads_slot', true) . "});}</script>" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
         elseif(empty($ads_mobile)):
             $ads_mobile_id = get_term_meta($position->term_id, 'ads_mobile', true);
 
-            if(!empty($ads_mobile_id)):
-                $htmlMobile .= "<script>if(window.innerWidth <= {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_mobile_id, 'ads_slot', true) . "});}</script>";
-                $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">" . get_post_meta($ads_mobile_id, 'ads_code', true) . "</div>";
-            endif;
+            if(!empty($ads_mobile_id))
+                $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\"><script>if(window.innerWidth <= {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_mobile_id, 'ads_slot', true) . "});}</script>" . get_post_meta($ads_mobile_id, 'ads_code', true) . "</div>";
         endif;
 
         if(!empty($ads_desktop) && $ads_desktop != -1):
-            $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
+            $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\"><script>if(window.innerWidth > {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_desktop, 'ads_slot', true) . "});}</script>" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
         elseif(empty($ads_desktop)):
             $ads_desktop_id = get_term_meta($position->term_id, 'ads_desktop', true);
 
-            if(!empty($ads_desktop_id)):
-                $htmlDesktop .= "<script>if(window.innerWidth > {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_desktop_id, 'ads_slot', true) . "});}</script>";
-                $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\"> " . get_post_meta($ads_desktop_id, 'ads_code', true) . "</div>";
-            endif;
+            if(!empty($ads_desktop_id))
+                $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\"><script>if(window.innerWidth > {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_desktop_id, 'ads_slot', true) . "});}</script>" . get_post_meta($ads_desktop_id, 'ads_code', true) . "</div>";
         endif;
 
         return $htmlMobile . $htmlDesktop;
@@ -478,7 +474,7 @@ if(!class_exists('AdsManager')):
         if(empty($id))
             return;
 
-        return "<div class=\"" . ($display == 'mobile' ? 'ads-manager ads-code ads-mobile d-block d-lg-none' : ($display == 'desktop' ? 'ads-manager ads-code ads-desktop d-none d-lg-block' : 'ads-manager ads-code d-block')) . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
+        return "<div class=\"" . ($display == 'mobile' ? 'ads-manager ads-code ads-mobile' : ($display == 'desktop' ? 'ads-manager ads-code ads-desktop' : 'ads-manager ads-code d-block')) . "\">" . get_post_meta($id, 'ads_code', true) . "</div>";
     }
 
     new AdsManager();

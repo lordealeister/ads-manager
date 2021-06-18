@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.2.3
+ * Version:     1.3.0
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -44,9 +44,33 @@ if(!class_exists('AdsManager')):
         }
 
         function enqueueAssetsFront() {
+            $maxMobileSize = get_option('ads_mobile_max_size');
+            $maxMobileSize = !empty($maxMobileSize) ? $maxMobileSize : 991;
+
             wp_enqueue_script('google-tag', 'https://securepubads.g.doubleclick.net/tag/js/gpt.js', [], null, false);
-            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.min.js', __FILE__), array()); 
             wp_add_inline_script('google-tag', $this->adsScripts());
+
+            wp_register_style('ads-manager', false );
+            wp_enqueue_style('ads-manager');
+            wp_add_inline_style(
+                'ads-manager', 
+                "<style>
+                    .ads-mobile {
+                        display: none;
+                    }
+                    .ads-desktop {
+                        display: block;
+                    }
+                    @media only screen and (max-width: {$maxMobileSize}px) {
+                        .ads-mobile {
+                            display: block !important;
+                        }
+                        .ads-desktop {
+                            display: none !important;
+                        }
+                    }
+                </style>"
+            );
         }
     
         function registerPostType() {
@@ -386,30 +410,7 @@ if(!class_exists('AdsManager')):
         }
 
         function adsScripts() {
-            global $wpdb;
-            $data = "window.googletag = window.googletag || {cmd: []}; googletag.cmd.push(function() {";
-
-            $results = $wpdb->get_results( 
-                "SELECT pm.meta_value AS slot
-                FROM {$wpdb->posts} p
-                LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
-                AND pm.meta_key = 'ads_slot'
-                WHERE p.post_type = 'ads'
-                AND p.post_status NOT IN ('draft','auto-draft')"
-            );
-
-            if(!empty($results)):
-                foreach($results as $ads):
-                    if(empty($ads->slot))
-                        continue;
-
-                    $data .= $ads->slot;
-                endforeach;
-            endif;
-
-            $data .= "googletag.pubads().enableSingleRequest(); googletag.enableServices(); });";
-
-            return $data;
+            return "window.googletag = window.googletag || {cmd: []}; googletag.cmd.push(function() {googletag.pubads().enableSingleRequest(); googletag.enableServices(); });";
         }
 
     }
@@ -427,7 +428,6 @@ if(!class_exists('AdsManager')):
         $is_category = is_category();
         $htmlMobile = "";
         $htmlDesktop = "";
-        $id = uniqid('ads-');
         $maxMobileSize = get_option('ads_mobile_max_size');
         $maxMobileSize = !empty($maxMobileSize) ? $maxMobileSize : 991;
 
@@ -450,49 +450,26 @@ if(!class_exists('AdsManager')):
         if(!empty($ads_mobile) && $ads_mobile != -1):
             $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">" . get_post_meta($ads_mobile, 'ads_code', true) . "</div>";
         elseif(empty($ads_mobile)):
-            $ads_mobile = get_term_meta($position->term_id, 'ads_mobile', true);
+            $ads_mobile_id = get_term_meta($position->term_id, 'ads_mobile', true);
 
-            if(!empty($ads_mobile))
-                $ads_mobile = get_post_meta($ads_mobile, 'ads_code', true);
-
-            if(!empty($ads_mobile))
-                $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">$ads_mobile</div>";
+            if(!empty($ads_mobile_id)):
+                $htmlMobile .= "<script>if(window.innerWidth <= {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_mobile_id, 'ads_slot', true) . "});}</script>";
+                $htmlMobile .= "<div class=\"ads-manager ads-position ads-mobile\">" . get_post_meta($ads_mobile_id, 'ads_code', true) . "</div>";
+            endif;
         endif;
 
         if(!empty($ads_desktop) && $ads_desktop != -1):
             $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\">" . get_post_meta($ads_desktop, 'ads_code', true) . "</div>";
         elseif(empty($ads_desktop)):
-            $ads_desktop = get_term_meta($position->term_id, 'ads_desktop', true);
+            $ads_desktop_id = get_term_meta($position->term_id, 'ads_desktop', true);
 
-            if(!empty($ads_mobile))
-                $ads_desktop = get_post_meta($ads_desktop, 'ads_code', true);
-
-            if(!empty($ads_desktop))
-                $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\">$ads_desktop</div>";
+            if(!empty($ads_desktop_id)):
+                $htmlDesktop .= "<script>if(window.innerWidth > {$maxMobileSize}) {googletag.cmd.push(function() {" . get_post_meta($ads_desktop_id, 'ads_slot', true) . "});}</script>";
+                $htmlDesktop .= "<div class=\"ads-manager ads-position ads-desktop\"> " . get_post_meta($ads_desktop_id, 'ads_code', true) . "</div>";
+            endif;
         endif;
 
-        $htmlMobile = preg_replace('/\r|\n/', '', $htmlMobile);
-        $htmlMobile = str_replace('<', '\x3C', $htmlMobile);
-        $htmlMobile = str_replace('\'', '"', $htmlMobile);
-
-        $htmlDesktop = preg_replace('/\r|\n/', '', $htmlDesktop);
-        $htmlDesktop = str_replace('<', '\x3C', $htmlDesktop);
-        $htmlDesktop = str_replace('\'', '"', $htmlDesktop);
-
-        $script = "<script>
-            var template = function() {
-                if(window.innerWidth <= {$maxMobileSize})
-                    ads = '$htmlMobile';
-                else
-                    ads = '$htmlDesktop';
-
-                return ads;
-            };
-        
-            window.renderAds(template(), document.querySelector('#$id'));
-        </script>";
-
-        return "<div id=\"$id\"></div>$script";
+        return $htmlMobile . $htmlDesktop;
     }
 
     function ads_code($id = 0, $display = null) {

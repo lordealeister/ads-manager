@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.2.2
+ * Version:     1.2.3
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -44,8 +44,8 @@ if(!class_exists('AdsManager')):
         }
 
         function enqueueAssetsFront() {
-            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.min.js', __FILE__), array()); 
             wp_enqueue_script('google-tag', 'https://securepubads.g.doubleclick.net/tag/js/gpt.js', [], null, false);
+            wp_enqueue_script('ads-manager-script', plugins_url('/assets/ads-manager.min.js', __FILE__), array()); 
             wp_add_inline_script('google-tag', $this->adsScripts());
         }
     

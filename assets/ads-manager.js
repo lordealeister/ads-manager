@@ -9,8 +9,11 @@ window.renderAds = function(template, node) {
 	if(!elements.length)
 		return;
 
-	elements.forEach(element => {
-		if(window.googletag && googletag.apiReady) 
+	for(var i = 0; i < elements.length; i++) {
+		var element = elements[i];
+		
+		googletag.cmd.push(function() {
 			googletag.display(element.id);
-	});
+		});
+	}
 };

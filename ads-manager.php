@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.3.0
+ * Version:     1.3.1
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -54,7 +54,7 @@ if(!class_exists('AdsManager')):
             wp_enqueue_style('ads-manager');
             wp_add_inline_style(
                 'ads-manager', 
-                "<style>
+                "
                     .ads-mobile {
                         display: none;
                     }
@@ -69,7 +69,7 @@ if(!class_exists('AdsManager')):
                             display: none !important;
                         }
                     }
-                </style>"
+                "
             );
         }
     

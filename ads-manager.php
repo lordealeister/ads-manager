@@ -3,7 +3,7 @@
  * Plugin Name: Ads manager
  * Description: Simple Ads manager
  * Plugin URI:  https://github.com/lordealeister/ads-manager
- * Version:     1.3.1
+ * Version:     1.3.2
  * Author:      Lorde Aleister
  * Author URI:  https://github.com/lordealeister
  * Text Domain: ads-manager
@@ -193,7 +193,7 @@ if(!class_exists('AdsManager')):
                 'name'             => __('Ativo', 'ads-manager'),
                 'id'               => 'ads_position_active',
                 'type'             => 'switch',
-                'default'          => true, //If it's checked by default 
+                'default'          => false, //If it's checked by default 
                 'active_value'     => true,
                 'inactive_value'   => false
             ));
